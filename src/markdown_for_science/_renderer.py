@@ -9,7 +9,8 @@ class LaTeXRenderer(BaseRenderer):
     NAME = "latex"
     IS_TREE = False
 
-    def __init__(self, acronym_file=None):
+    def __init__(self, acronym_file=None, chapters=False):
+        self.chapters = chapters
         self.acronyms = {}
         if acronym_file is not None:
             with open(acronym_file, "r") as f:
@@ -20,6 +21,11 @@ class LaTeXRenderer(BaseRenderer):
                 self.acronyms[ref] = {"short": short, "full": full, "used": False}
 
         super().__init__()
+
+    def chapter(self, title):
+        if self.chapters:
+            return f"\\chapter{{{title}}}\n\n"
+        return f"!\\# {title}\n"
 
     def heading(self, text, level):
         command = "sub" * (level - 1) + "section"
@@ -96,16 +102,16 @@ class LaTeXRenderer(BaseRenderer):
         return equation
 
     def emphasis(self, text):
-        return "<em>" + text + "</em>"
+        return "\\emph{" + text + "}"
 
     def strong(self, text):
-        return "<strong>" + text + "</strong>"
+        return "\\textbf{" + text + "}"
 
-    # def codespan(self, text):
-    #     return "<code>" + escape(text) + "</code>"
+    def codespan(self, text):
+        return "\\texttt{" + tex_escape(text) + "}"
 
     def linebreak(self):
-        return "<br />\n"
+        return "\\newline"
 
     # def inline_html(self, html):
     #     if self._escape:
@@ -116,39 +122,54 @@ class LaTeXRenderer(BaseRenderer):
         return ""
 
     def thematic_break(self):
-        return "<hr />\n"
+        return r"\noindent\rule{\textwidth}{1pt}"
 
     def block_text(self, text):
         return text
 
-    # def block_code(self, code, info=None):
-    #     html = "<pre><code"
-    #     if info is not None:
-    #         info = info.strip()
-    #     if info:
-    #         lang = info.split(None, 1)[0]
-    #         lang = escape_html(lang)
-    #         html += ' class="language-' + lang + '"'
-    #     return html + ">" + escape(code) + "</code></pre>\n"
+    def block_code(self, code, info=None):
+        if info is not None:
+            info = info.strip()
+        if info:
+            lang = f"[language={info.split(None, 1)[0]}]\n"
+        else:
+            lang = "\n"
+        return f"\n\\begin{{lstlisting}}{lang}\n{code}\\end{{lstlisting}}\n"
+
+        # html = "<pre><code"
+        # if info is not None:
+        #     info = info.strip()
+        # if info:
+        #     lang = info.split(None, 1)[0]
+        #     lang = escape_html(lang)
+        #     html += ' class="language-' + lang + '"'
+        # return html + ">" + escape(code) + "</code></pre>\n"
 
     def block_quote(self, text):
-        return "<blockquote>\n" + text + "</blockquote>\n"
+        return f"\\begin{{displayquote}}\n{text}\\end{{displayquote}}\n"
+        # return "<blockquote>\n" + text + "</blockquote>\n"
 
-    # def block_html(self, html):
-    #     if not self._escape:
-    #         return html + "\n"
-    #     return "<p>" + escape(html) + "</p>\n"
+    def block_html(self, html):
+        raise NotImplementedError("Block HTML hasn't been added yet.")
+        # if not self._escape:
+        #     return html + "\n"
+        # return "<p>" + escape(html) + "</p>\n"
 
     def block_error(self, html):
-        return '<div class="error">' + html + "</div>\n"
+        raise NotImplementedError("Block errors haven't been added yet.")
+        # return '<div class="error">' + html + "</div>\n"
 
     def list(self, text, ordered, level, start=None):
         if ordered:
-            html = "<ol"
-            if start is not None:
-                html += ' start="' + str(start) + '"'
-            return html + ">\n" + text + "</ol>\n"
-        return "<ul>\n" + text + "</ul>\n"
+            # latex = "<ol"
+            # if start is not None:
+            #     latex += ' start="' + str(start) + '"'
+            # return latex + ">\n" + text + "</ol>\n"
+            enumi = "enum" + "i" * level
+            counter = "" if start is None else f"\t\\setcounter{{{enumi}}}{{{start}}}"
+            return f"\\begin{{enumerate}}\n{counter}\n{text}\\end{{enumerate}}"
+        return "\\begin{itemize}\n" + text + "\\end{itemize}\n"
 
     def list_item(self, text, level):
-        return "<li>" + text + "</li>\n"
+        # raise NotImplementedError("List items haven't been implemented yet.")
+        return f"\\item {text}"

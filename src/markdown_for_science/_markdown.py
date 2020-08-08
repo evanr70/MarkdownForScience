@@ -4,9 +4,17 @@ from mistune import Markdown, HTMLRenderer, AstRenderer, PLUGINS
 
 
 class ExtendedMarkdown(Markdown):
-    doc_class = "\\documentclass{article}\n"
+    doc_class = "\\documentclass{{{document_class}}}\n"
     graphicx = "\\usepackage{graphicx}\n"
-    hyperref = "\\usepackage{hyperref}"
+    hyperref = "\\usepackage{hyperref}\n"
+    csquotes = "\\usepackage{csquotes}\n"
+    listings = (
+        "\\usepackage{listings}\n"
+        "\\lstset{basicstyle=\\footnotesize\\ttfamily,breaklines=true}\n"
+        "\\lstset{framextopmargin=50pt,frame=b}\n"
+        "\\lstset{backgroundcolor=\\color{lightgray!20}}\n"
+    )
+    xcolor = "\\usepackage[dvipsnames]{xcolor}\n"
     commands = (
         "\\makeatletter\n"
         "\\def\\maxwidth#1{\\ifdim\\Gin@nat@width>#1 #1"
@@ -16,9 +24,17 @@ class ExtendedMarkdown(Markdown):
     end_matter = "\\end{document}\n"
 
     def __init__(
-        self, renderer, inline=None, block=None, plugins=None, bibliography=""
+        self,
+        renderer,
+        inline=None,
+        block=None,
+        plugins=None,
+        bibliography="",
+        chapters=False,
     ):
         super().__init__(renderer, inline=inline, block=block, plugins=plugins)
+
+        self.document_class = "report" if chapters else "article"
 
         self.biblatex = ""
         self.bib_resource = ""
@@ -32,9 +48,12 @@ class ExtendedMarkdown(Markdown):
         result = self.parse(s, state)
         return "".join(
             [
-                self.doc_class
+                self.doc_class.format(document_class=self.document_class)
                 + self.graphicx
                 + self.hyperref
+                + self.csquotes
+                + self.xcolor
+                + self.listings
                 + self.biblatex
                 + self.bib_resource
                 + self.commands
@@ -50,7 +69,12 @@ class ExtendedMarkdown(Markdown):
 
 
 def create_markdown(
-    escape=True, renderer=None, plugins=None, acronyms=None, bibliography=""
+    escape=True,
+    renderer=None,
+    plugins=None,
+    acronyms=None,
+    bibliography="",
+    chapters=False,
 ):
     """Create a Markdown instance based on the given condition.
 
@@ -69,7 +93,7 @@ def create_markdown(
         markdown('.... your text ...')
     """
     if renderer is None or renderer == "latex":
-        renderer = LaTeXRenderer(acronym_file=acronyms)
+        renderer = LaTeXRenderer(acronym_file=acronyms, chapters=chapters)
     if renderer == "html":
         renderer = HTMLRenderer(escape=escape)
     elif renderer == "ast":
@@ -85,7 +109,8 @@ def create_markdown(
         plugins = _plugins
     return ExtendedMarkdown(
         renderer,
-        inline=ExtendedInlineParser(renderer),
+        inline=ExtendedInlineParser(renderer, chapters=chapters),
         plugins=plugins,
         bibliography=bibliography,
+        chapters=chapters,
     )

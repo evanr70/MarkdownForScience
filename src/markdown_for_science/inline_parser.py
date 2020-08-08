@@ -1,5 +1,7 @@
 from mistune.inline_parser import *
+import logging
 
+_logger = logging.getLogger("MardownForScience")
 
 # noinspection PyMethodMayBeStatic
 class ExtendedInlineParser(InlineParser):
@@ -8,9 +10,11 @@ class ExtendedInlineParser(InlineParser):
     DISPLAY_MATH = r"^\s*?\$\$(.*?)\$\$.*?"
     INLINE_MATH = r"(\$.*?\$)"
     ACRONYM = r"(%{1,2}) *(.+?) *(%{1,2})"
+    CHAPTER = r"^\!#\s(.*?)(?:\r\n|\r|\n)?$"
 
-    def __init__(self, renderer):
+    def __init__(self, renderer, chapters):
         self.RULE_NAMES = (
+            "chapter",
             "image_options",
             "citation",
             "display_math",
@@ -19,6 +23,7 @@ class ExtendedInlineParser(InlineParser):
             *self.RULE_NAMES,
         )
         super().__init__(renderer)
+        self.chapters = chapters
 
     def parse_image_options(self, m, state):
         caption = m.group(1)
@@ -41,3 +46,15 @@ class ExtendedInlineParser(InlineParser):
         content = m.group(2)
         close_token = m.group(3)
         return "acronym", open_token, content, close_token
+
+    def parse_chapter(self, m, state):
+        if not self.chapters:
+            _logger.warning(
+                "Chapter notation (!#) has been found, but the "
+                "program has been run with chapters set to False.\n"
+                "If you expected chapters to be rendered, use the "
+                "'--chapters/-c' option."
+            )
+
+        chapter_title = m.group(1)
+        return "chapter", chapter_title

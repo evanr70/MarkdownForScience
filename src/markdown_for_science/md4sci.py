@@ -1,21 +1,25 @@
 """Parse extended markdown to LaTeX
 
 Usage:
-  md4sci.py <toc> [--acronyms=<acronym_file>] [--output=<output_file] [--bibliography=<bib_file]
+  md4sci.py <input_file> [--toc] [--acronyms=<acronym_file>] [--output=<output_file] [--bibliography=<bib_file] [--markdown=<markdown_file>] [--chapters]
 
 Arguments:
-  <toc>  table of contents
+  <input_file>  input file
 
 Options:
+  --toc  The input file a table of contents?
   -a <acronym_file> --acronyms=<acronym_file>  File containing acronyms
   -o <output_file> --output=<output_file>  Output file
   -b <bib_file> --bibliography=<bib_file>  Bibliography file
+  -m <markdown_file> --markdown=<markdown_file>  Save the collected markdown to a file
+  -c --chapters  Use the article format with chapters
 
 
 """
 
 from docopt import docopt
 from markdown_for_science import create_markdown
+from markdown_for_science.ascii import ascii_sequence
 
 
 def text_from_table_of_contents(file_name: str):
@@ -31,14 +35,29 @@ def text_from_table_of_contents(file_name: str):
     return full_text
 
 
+def text_from_file(filename: str):
+    with open(filename, "r") as input_file:
+        text = input_file.read()
+    return text
+
+
 def run():
     arguments = docopt(__doc__)
-    toc = arguments["<toc>"]
+    input_file = arguments["<input_file>"]
+    toc = arguments["--toc"]
     output = arguments["--output"]
     acronyms = arguments["--acronyms"]
     bibliography = arguments["--bibliography"]
+    markdown_file_name = arguments["--markdown"]
+    chapters = arguments["--chapters"]
 
-    info_string = f"Converting markdown file '{toc}' into latex file '{output}'"
+    print(ascii_sequence)
+
+    if not output:
+        output = input_file.replace(".md", "")
+        output = output + ".tex"
+
+    info_string = f"Converting markdown file '{input_file}' into latex file '{output}'"
     if acronyms is not None:
         info_string = info_string + f" using acronyms in '{acronyms}'"
     if bibliography is not None:
@@ -46,12 +65,22 @@ def run():
 
     print(info_string)
 
-    markdown_text = text_from_table_of_contents(toc)
-    markdown = create_markdown(acronyms=acronyms, bibliography=bibliography)
+    if toc:
+        markdown_text = text_from_table_of_contents(input_file)
+    else:
+        markdown_text = text_from_file(input_file)
+
+    markdown = create_markdown(
+        acronyms=acronyms, bibliography=bibliography, chapters=chapters
+    )
     latex_text = markdown(markdown_text)
 
     with open(output, "w") as output_file:
         output_file.write(latex_text)
+
+    if markdown_file_name is not None:
+        with open(markdown_file_name, "w") as markdown_file:
+            markdown_file.write(markdown_text)
 
 
 if __name__ == "__main__":
