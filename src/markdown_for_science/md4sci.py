@@ -1,7 +1,7 @@
 """Parse extended markdown to LaTeX
 
 Usage:
-  md4sci.py <toc> [--acronyms=<acronym_file>] [--output=<output_file]
+  md4sci.py <toc> [--acronyms=<acronym_file>] [--output=<output_file] [--bibliography=<bib_file]
 
 Arguments:
   <toc>  table of contents
@@ -9,6 +9,7 @@ Arguments:
 Options:
   -a <acronym_file> --acronyms=<acronym_file>  File containing acronyms
   -o <output_file> --output=<output_file>  Output file
+  -b <bib_file> --bibliography=<bib_file>  Bibliography file
 
 
 """
@@ -35,15 +36,18 @@ def run():
     toc = arguments["<toc>"]
     output = arguments["--output"]
     acronyms = arguments["--acronyms"]
+    bibliography = arguments["--bibliography"]
 
     info_string = f"Converting markdown file '{toc}' into latex file '{output}'"
     if acronyms is not None:
         info_string = info_string + f" using acronyms in '{acronyms}'"
+    if bibliography is not None:
+        info_string = info_string + f" and bibliography from '{bibliography}'"
 
     print(info_string)
 
     markdown_text = text_from_table_of_contents(toc)
-    markdown = create_markdown(acronyms)
+    markdown = create_markdown(acronyms=acronyms, bibliography=bibliography)
     latex_text = markdown(markdown_text)
 
     with open(output, "w") as output_file:
