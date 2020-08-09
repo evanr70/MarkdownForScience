@@ -31,6 +31,7 @@ class ExtendedMarkdown(Markdown):
         plugins=None,
         bibliography="",
         chapters=False,
+        toc=False,
     ):
         super().__init__(renderer, inline=inline, block=block, plugins=plugins)
 
@@ -43,6 +44,9 @@ class ExtendedMarkdown(Markdown):
             self.biblatex = "\\usepackage[backend=biber,style=nature]{biblatex}\n"
             self.bib_resource = f"\\addbibresource{{{bibliography}}}\n"
             self.print_bib = "\\printbibliography\n"
+        self.table_of_contents = ""
+        if toc:
+            self.table_of_contents = "\\tableofcontents\n"
 
     def latex_parse(self, s, state=None):
         result = self.parse(s, state)
@@ -58,6 +62,7 @@ class ExtendedMarkdown(Markdown):
                 + self.bib_resource
                 + self.commands
                 + self.begin
+                + self.table_of_contents
                 + result
                 + self.print_bib
                 + self.end_matter
@@ -75,6 +80,7 @@ def create_markdown(
     acronyms=None,
     bibliography="",
     chapters=False,
+    toc=False,
 ):
     """Create a Markdown instance based on the given condition.
 
@@ -113,4 +119,5 @@ def create_markdown(
         plugins=plugins,
         bibliography=bibliography,
         chapters=chapters,
+        toc=toc,
     )

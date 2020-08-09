@@ -11,9 +11,11 @@ class ExtendedInlineParser(InlineParser):
     INLINE_MATH = r"(\$.*?\$)"
     ACRONYM = r"(%{1,2}) *(.+?) *(%{1,2})"
     CHAPTER = r"^\!#\s(.*?)(?:\r\n|\r|\n)?$"
+    QUOTES = "(?<!\\S)([\"'])([^\\1]+?)\\1"
 
     def __init__(self, renderer, chapters):
         self.RULE_NAMES = (
+            "quotes",
             "chapter",
             "image_options",
             "citation",
@@ -31,6 +33,12 @@ class ExtendedInlineParser(InlineParser):
         width = m.group(3)
         height = m.group(4)
         return "image_options", src, caption, width, height
+
+    def parse_quotes(self, m, state):
+        quote = m.group(0)[0]
+        number = 1 if quote == "'" else 2
+        text = m.group(2)
+        return "quotes", number, text
 
     def parse_citation(self, m, state):
         return "citation", m.group(1)

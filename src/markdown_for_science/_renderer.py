@@ -29,7 +29,12 @@ class LaTeXRenderer(BaseRenderer):
 
     def heading(self, text, level):
         command = "sub" * (level - 1) + "section"
-        return f"\\{command}{{{text}}}\n\n"
+        return f"\\{command}{{{text}}}\\label{{{text}}}\n\n"
+
+    def quotes(self, number, text):
+        open = "`" * number
+        close = "'" * number
+        return f"{open}{text}{close}"
 
     def text(self, text):
         return tex_escape(text)
@@ -41,6 +46,9 @@ class LaTeXRenderer(BaseRenderer):
         if text is None:
             text = link
 
+        if link[0] == "#":
+            # link = link[1:]
+            return f"\\href{{{tex_escape(text)}}}{{{tex_escape(text)}}}"
         return f"\\href{{{tex_escape(link)}}}{{{tex_escape(text)}}}"
 
     def acronym(self, open_token, content, close_token):

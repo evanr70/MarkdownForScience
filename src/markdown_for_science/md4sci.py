@@ -1,18 +1,19 @@
 """Parse extended markdown to LaTeX
 
 Usage:
-  md4sci.py <input_file> [--toc] [--acronyms=<acronym_file>] [--output=<output_file] [--bibliography=<bib_file] [--markdown=<markdown_file>] [--chapters]
+  md4sci.py <input_file> [--toc] [--acronyms=<acronym_file>] [--output=<output_file] [--bibliography=<bib_file] [--markdown=<markdown_file>] [--chapters] [--print-toc]
 
 Arguments:
   <input_file>  input file
 
 Options:
-  --toc  The input file a table of contents?
+  --toc  Is the input file a table of contents?
   -a <acronym_file> --acronyms=<acronym_file>  File containing acronyms
   -o <output_file> --output=<output_file>  Output file
   -b <bib_file> --bibliography=<bib_file>  Bibliography file
   -m <markdown_file> --markdown=<markdown_file>  Save the collected markdown to a file
   -c --chapters  Use the article format with chapters
+  -T --print-toc  Add a table of contents to the document
 
 
 """
@@ -50,6 +51,7 @@ def run():
     bibliography = arguments["--bibliography"]
     markdown_file_name = arguments["--markdown"]
     chapters = arguments["--chapters"]
+    print_toc = arguments["--print-toc"]
 
     print(ascii_sequence)
 
@@ -71,7 +73,7 @@ def run():
         markdown_text = text_from_file(input_file)
 
     markdown = create_markdown(
-        acronyms=acronyms, bibliography=bibliography, chapters=chapters
+        acronyms=acronyms, bibliography=bibliography, chapters=chapters, toc=print_toc,
     )
     latex_text = markdown(markdown_text)
 
