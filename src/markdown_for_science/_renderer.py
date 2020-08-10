@@ -22,6 +22,9 @@ class LaTeXRenderer(BaseRenderer):
 
         super().__init__()
 
+    def abstract(self, text):
+        return f"\\begin{{abstract}}\n{text}\n\\end{{abstract}}"
+
     def chapter(self, title):
         if self.chapters:
             return f"\\chapter{{{title}}}\n\n"

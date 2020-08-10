@@ -1,4 +1,5 @@
 from markdown_for_science._renderer import LaTeXRenderer
+from markdown_for_science.block_parser import ExtendedBlockParser
 from markdown_for_science.inline_parser import ExtendedInlineParser
 from mistune import Markdown, HTMLRenderer, AstRenderer, PLUGINS
 
@@ -116,6 +117,7 @@ def create_markdown(
     return ExtendedMarkdown(
         renderer,
         inline=ExtendedInlineParser(renderer, chapters=chapters),
+        block=ExtendedBlockParser(),
         plugins=plugins,
         bibliography=bibliography,
         chapters=chapters,

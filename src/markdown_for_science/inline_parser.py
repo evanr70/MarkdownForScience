@@ -1,7 +1,8 @@
 from mistune.inline_parser import *
 import logging
 
-_logger = logging.getLogger("MardownForScience")
+_logger = logging.getLogger("MarkdownForScience")
+
 
 # noinspection PyMethodMayBeStatic
 class ExtendedInlineParser(InlineParser):
