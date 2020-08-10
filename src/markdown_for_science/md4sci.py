@@ -29,6 +29,7 @@ def text_from_table_of_contents(file_name: str):
 
     text_files = []
     for text_file_name in text_file_names:
+        text_file_name = text_file_name.lstrip()
         with open(text_file_name, "r") as text_file:
             text_files.append(text_file.read())
 
